@@ -67,6 +67,23 @@ const styles = StyleSheet.create({
   },
 });
 ```
+### Configurable props
+
+* [headers](#headers)
+
+#### headers
+Pass headers to the HTTP client. Can be used for authorization. Headers must be a part of the source object.
+
+Example:
+```
+source={{
+  uri: "https://www.example.com/video.mp4",
+  headers: {
+    'Host': 'some value',
+    'tokenr': 'some value'
+  }
+}}
+```
 
 ### 2. Android Integration
 
