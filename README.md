@@ -52,7 +52,6 @@ Run `npm install react-native-ksyplayer --save`
        onProgress={this.setTime}               // Callback every ~250ms with currentTime
        onEnd={this.onEnd}                      // Callback when playback finishes
        onError={this.videoError}               // Callback when video cannot be loaded
-       onBuffer={this.onBuffer}                // Callback when remote video is buffering
        style={styles.backgroundVideo} />
 
 
@@ -66,23 +65,6 @@ const styles = StyleSheet.create({
     right: 0,
   },
 });
-```
-### Configurable props
-
-* [headers](#headers)
-
-#### headers
-Pass headers to the HTTP client. Can be used for authorization. Headers must be a part of the source object.
-
-Example:
-```
-source={{
-  uri: "https://www.example.com/video.mp4",
-  headers: {
-    'Host': 'some value',
-    'tokenr': 'some value'
-  }
-}}
 ```
 
 ### 2. Android Integration
@@ -157,6 +139,57 @@ dependencies {
 #### 4.2 iOS
 
 Get the latest framework of KSYMeidaPlayer_iOS at https://github.com/ksvc/KSYMediaPlayer_iOS/releases, then replace the old framework in node_modules/react-native-ksyplayer/ios directory
+
+### Configurable props  like react-native-video (https://github.com/react-native-community/react-native-video)
+* [rate](#rate)
+* [volume](#volume)
+* [muted](#muted)
+* [paused](#paused)
+* [headers](#headers)
+* [resizeMode](#resizemode)
+
+#### muted
+Controls whether the audio is muted
+* **false (default)** - Don't mute audio
+* **true** - Mute audio
+
+#### paused
+Controls whether the media is paused
+* **false (default)** - Don't pause the media
+* **true** - Pause the media
+
+#### headers
+Pass headers to the HTTP client. Can be used for authorization. Headers must be a part of the source object.
+
+Example:
+```
+source={{
+  uri: "https://www.example.com/video.mp4",
+  headers: {
+    'Host': 'some value',
+    'tokenr': 'some value'
+  }
+}}
+```
+
+#### resizeMode
+Determines how to resize the video when the frame doesn't match the raw video dimensions.
+* **"none" (default)** - Don't apply resize
+* **"contain"** - Scale the video uniformly (maintain the video's aspect ratio) so that both dimensions (width and height) of the video will be equal to or less than the corresponding dimension of the view (minus padding).
+* **"cover"** - Scale the video uniformly (maintain the video's aspect ratio) so that both dimensions (width and height) of the image will be equal to or larger than the corresponding dimension of the view (minus padding).
+* **"stretch"** - Scale width and height independently, This may change the aspect ratio of the src.
+
+#### volume
+Adjust the volume.
+* **1.0 (default)** - Play at full volume
+* **0.0** - Mute the audio
+* **Other values** - Reduce volume
+
+### rate
+Speed at which the media should play. 
+* **0.0** - Pauses the video
+* **1.0** - Play at normal speed
+* **Other values** - Slow down or speed up playback
 
 ### 5. LICENSE
 [Apache 2.0](LICENSE)
