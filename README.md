@@ -1,4 +1,4 @@
-## react-native-video-player
+## react-native-ksyplayer
  
 > Source Type: **Open Source**
 
@@ -6,17 +6,23 @@
 
 More details about KSYMediaPlayer, please click the link blow:
 
-* [KSYMediaPlayer Android SDK for vod or live streaming playing][player_android]
-* [KSYMediaPlayer iOS SDK for vod or live streaming playing][player_ios]
+* [KSYMediaPlayer Android SDK for vod or live streaming playing](https://github.com/ksvc/KSYMediaPlayer_Android)
+* [KSYMediaPlayer iOS SDK for vod or live streaming playing](https://github.com/ksvc/KSYMediaPlayer_iOS)
 
 *Android support*
 
 *iOS support*
 
+*Video Format Support:FLV, TS, MPEG, MOV, MP4, M4V, MP3, AAC, GIF, ASF, RM, MKV, AVI, WEBM, HLS, RTMP, RTSP, HTTP, FILE*
+
+*Audio Format Support:AAC, MP3, NELLYMOSER, AMRNB, AMRWB, WMV1, WMV2, WMV3, OGG, FLAC, DTS, COOK*
+
 
 ### 1. About
 
 A `<KSYVideo>` component for react-native,requires react-native >= 0.49.0
+
+If you're interested in this library, I'd love to see you join in maintenance.
 
 #### 1.1 Add it to your project
 * Install via npm
@@ -34,6 +40,7 @@ Run `npm install react-native-ksyplayer --save`
        }}                                      // Store reference
   
        volume={1.0}                            
+       rate={1.0}                              // rate
        muted={false}                           
        paused={false}                          // Pauses playback entirely.
        resizeMode="cover"                      // Fill the whole screen at aspect ratio.*

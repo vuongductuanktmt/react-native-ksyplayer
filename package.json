@@ -27,7 +27,7 @@
     "name": "ksy"
   },
   "bugs": {
-    "url": "https://github.com/zzf2e/react-native-video-player/issues"
+    "url": "https://github.com/zzfex/react-native-ksyplayer/issues"
   },
   "bundleDependencies": false,
   "deprecated": false,
@@ -35,7 +35,7 @@
   "directories": {
     "example": "example"
   },
-  "homepage": "https://github.com/zzf2e/react-native-video-player#readme",
+  "homepage": "https://github.com/zzfex/react-native-ksyplayer#readme",
   "keywords": [
     "video"
   ],
@@ -44,7 +44,7 @@
   "name": "react-native-ksyplayer",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zzf2e/react-native-video-player.git"
+    "url": "git+https://github.com/zzfex/react-native-ksyplayer.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
