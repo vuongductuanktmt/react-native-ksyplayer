@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.ksyun.media.player.IMediaPlayer;
@@ -35,23 +36,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Nullable;
 
 /**
  * Created by dengchu on 2017/10/26.
  */
 
-public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventListener, MediaController.MediaPlayerControl{
+public class ReactKSYVideoView extends RelativeLayout
+        implements LifecycleEventListener, MediaController.MediaPlayerControl {
 
     public enum Events {
-        EVENT_TOUCH("onVideoTouch"),
-        EVENT_LOAD_START("onVideoLoadStart"),
-        EVENT_LOAD("onVideoLoad"),
-        EVENT_ERROR("onVideoError"),
-        EVENT_PROGRESS("onVideoProgress"),
-        EVENT_SEEK("onVideoSeek"),
-        EVENT_END("onVideoEnd"),
-        EVENT_STALLED("onPlaybackStalled"),
-        EVENT_RESUME("onPlaybackResume"),
+        EVENT_TOUCH("onVideoTouch"), EVENT_LOAD_START("onVideoLoadStart"), EVENT_LOAD("onVideoLoad"),
+        EVENT_ERROR("onVideoError"), EVENT_PROGRESS("onVideoProgress"), EVENT_SEEK("onVideoSeek"),
+        EVENT_END("onVideoEnd"), EVENT_STALLED("onPlaybackStalled"), EVENT_RESUME("onPlaybackResume"),
         EVENT_READY_FOR_DISPLAY("onReadyForDisplay");
 
         private final String mName;
@@ -114,13 +114,18 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
     private int mReadTimeout = 30;
     private int mBufferSize = 15;
     private int mBufferTime = 2;
+    private ReadableMap mRequestHeaders = null;
+
     @Override
     public void requestLayout() {
         super.requestLayout();
 
-        // The spinner relies on a measure + layout pass happening after it calls requestLayout().
-        // Without this, the widget never actually changes the selection and doesn't call the
-        // appropriate listeners. Since we override onLayout in our ViewGroups, a layout pass never
+        // The spinner relies on a measure + layout pass happening after it calls
+        // requestLayout().
+        // Without this, the widget never actually changes the selection and doesn't
+        // call the
+        // appropriate listeners. Since we override onLayout in our ViewGroups, a layout
+        // pass never
         // happens after a call to requestLayout, so we simulate one here.
         post(measureAndLayout);
     }
@@ -128,8 +133,7 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
     private final Runnable measureAndLayout = new Runnable() {
         @Override
         public void run() {
-            measure(
-                    MeasureSpec.makeMeasureSpec(getWidth(), MeasureSpec.EXACTLY),
+            measure(MeasureSpec.makeMeasureSpec(getWidth(), MeasureSpec.EXACTLY),
                     MeasureSpec.makeMeasureSpec(getHeight(), MeasureSpec.EXACTLY));
             layout(getLeft(), getTop(), getRight(), getBottom());
         }
@@ -150,8 +154,8 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
         init(context);
     }
 
-    public void Release(){
-        if (ksyTextureView!=null){
+    public void Release() {
+        if (ksyTextureView != null) {
             ksyTextureView.stop();
             ksyTextureView.release();
         }
@@ -168,7 +172,7 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
 
             WritableMap event = Arguments.createMap();
             event.putDouble(EVENT_PROP_CURRENT_TIME, time / 1000.0);
-            event.putDouble(EVENT_PROP_PLAYABLE_DURATION, mVideoBufferedDuration / 1000.0); //TODO:mBufferUpdateRunnable
+            event.putDouble(EVENT_PROP_PLAYABLE_DURATION, mVideoBufferedDuration / 1000.0); // TODO:mBufferUpdateRunnable
             mEventEmitter.receiveEvent(getId(), Events.EVENT_PROGRESS.toString(), event);
 
             Message msg = new Message();
@@ -176,13 +180,12 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
             if (mHandler != null)
                 mHandler.sendMessageDelayed(msg, Math.round(mProgressUpdateInterval));
         }
-        return (int)time;
+        return (int) time;
     }
 
-    private IMediaPlayer.OnLogEventListener mOnLogEventListener = new IMediaPlayer.OnLogEventListener(){
+    private IMediaPlayer.OnLogEventListener mOnLogEventListener = new IMediaPlayer.OnLogEventListener() {
         @Override
-        public void onLogEvent(IMediaPlayer var1, String var2)
-        {
+        public void onLogEvent(IMediaPlayer var1, String var2) {
             Log.e(TAG, var2);
         }
     };
@@ -252,20 +255,20 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
         public boolean onInfo(IMediaPlayer iMediaPlayer, int i, int i1) {
 
             switch (i) {
-                case KSYMediaPlayer.MEDIA_INFO_BUFFERING_START:
-                    mEventEmitter.receiveEvent(getId(), Events.EVENT_STALLED.toString(), Arguments.createMap());
-                    break;
-                case KSYMediaPlayer.MEDIA_INFO_BUFFERING_END:
-                    mEventEmitter.receiveEvent(getId(), Events.EVENT_RESUME.toString(), Arguments.createMap());
-                    break;
-                case KSYMediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START:
-                    mEventEmitter.receiveEvent(getId(), Events.EVENT_READY_FOR_DISPLAY.toString(), Arguments.createMap());
-                    break;
-                case KSYMediaPlayer.MEDIA_INFO_SUGGEST_RELOAD:
-                    if (ksyTextureView != null)
-                        ksyTextureView.reload(mDataSource, true);
-                    break;
-                default:
+            case KSYMediaPlayer.MEDIA_INFO_BUFFERING_START:
+                mEventEmitter.receiveEvent(getId(), Events.EVENT_STALLED.toString(), Arguments.createMap());
+                break;
+            case KSYMediaPlayer.MEDIA_INFO_BUFFERING_END:
+                mEventEmitter.receiveEvent(getId(), Events.EVENT_RESUME.toString(), Arguments.createMap());
+                break;
+            case KSYMediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START:
+                mEventEmitter.receiveEvent(getId(), Events.EVENT_READY_FOR_DISPLAY.toString(), Arguments.createMap());
+                break;
+            case KSYMediaPlayer.MEDIA_INFO_SUGGEST_RELOAD:
+                if (ksyTextureView != null)
+                    ksyTextureView.reload(mDataSource, true);
+                break;
+            default:
             }
             return false;
         }
@@ -277,7 +280,6 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
             mVideoBufferedDuration = mVideoDuration * percent / 100;
         }
     };
-
 
     private IMediaPlayer.OnErrorListener mOnErrorListener = new IMediaPlayer.OnErrorListener() {
         @Override
@@ -297,10 +299,13 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
         mThemedReactContext = (ThemedReactContext) context;
         mEventEmitter = mThemedReactContext.getJSModule(RCTEventEmitter.class);
         mThemedReactContext.addLifecycleEventListener(this);
-//        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-//        layoutParams.gravity = Gravity.CENTER;
-//        ksyTextureView = new KSYTextureView(context);//(KSYTextureView) this.findViewById(R.id.ksy_textureview);
-//        ksyTextureView.setLayoutParams(layoutParams);
+        // FrameLayout.LayoutParams layoutParams = new
+        // FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+        // FrameLayout.LayoutParams.MATCH_PARENT);
+        // layoutParams.gravity = Gravity.CENTER;
+        // ksyTextureView = new KSYTextureView(context);//(KSYTextureView)
+        // this.findViewById(R.id.ksy_textureview);
+        // ksyTextureView.setLayoutParams(layoutParams);
         LayoutInflater.from(getContext()).inflate(R.layout.mediaplayer_layout, this, true);
 
         ksyTextureView = (KSYTextureView) this.findViewById(R.id.ksy_textureview);
@@ -324,9 +329,9 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 switch (msg.what) {
-                    case UPDATE_PROGRESS:
-                        setVideoProgress(0);
-                        break;
+                case UPDATE_PROGRESS:
+                    setVideoProgress(0);
+                    break;
                 }
             }
         };
@@ -358,7 +363,7 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
             outputStream.flush();
             outputStream.close();
-            //图片保存到相册
+            // 图片保存到相册
             MediaStore.Images.Media.insertImage(context.getContentResolver(), file.getAbsolutePath(), imageName, null);
             Uri uri = Uri.fromFile(file);
             context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
@@ -371,16 +376,37 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
 
     }
 
-    public void setDataSource(String url) {
+    public static Map<String, String> toStringMap(@Nullable ReadableMap readableMap) {
+        Map<String, String> result = new HashMap<>();
+        if (readableMap == null)
+            return result;
+
+        com.facebook.react.bridge.ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
+        while (iterator.hasNextKey()) {
+            String key = iterator.nextKey();
+            result.put(key, readableMap.getString(key));
+        }
+
+        return result;
+    }
+
+    public void setDataSource(String url, final ReadableMap requestHeaders) {
         WritableMap src = Arguments.createMap();
         src.putString(ReactKSYVideoViewManager.PROP_SRC_URI, url);
-
         WritableMap event = Arguments.createMap();
         event.putMap(ReactKSYVideoViewManager.PROP_SRC, src);
         mEventEmitter.receiveEvent(getId(), Events.EVENT_LOAD_START.toString(), event);
         mDataSource = url;
+        mRequestHeaders = requestHeaders;
+
+        Map<String, String> headers = new HashMap<String, String>();
+
+        if (mRequestHeaders != null) {
+            headers.putAll(toStringMap(mRequestHeaders));
+        }
+
         try {
-            ksyTextureView.setDataSource(url);
+            ksyTextureView.setDataSource(url, headers);
             ksyTextureView.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();
@@ -409,13 +435,13 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
             ksyTextureView.setRotateDegree(degree);
     }
 
-    public void setMirror(boolean mirror){
+    public void setMirror(boolean mirror) {
         mMirror = mirror;
         if (ksyTextureView != null)
             ksyTextureView.setMirror(mirror);
     }
 
-    public void seekToModifier(long time){
+    public void seekToModifier(long time) {
 
         if (ksyTextureView != null) {
             WritableMap event = Arguments.createMap();
@@ -424,39 +450,51 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
             mEventEmitter.receiveEvent(getId(), Events.EVENT_SEEK.toString(), event);
 
             ksyTextureView.seekTo(time);
-            //super.seekTo(time);
+            // super.seekTo(time);
         }
     }
 
-    public void setMutedModifier(boolean mute){
+    public void setMutedModifier(boolean mute) {
         mMuted = mute;
         if (ksyTextureView != null) {
             if (mMuted) {
                 ksyTextureView.setPlayerMute(1);
-            }
-            else{
+            } else {
                 ksyTextureView.setPlayerMute(0);
                 ksyTextureView.setVolume(mVolume, mVolume);
             }
         }
     }
 
-    public void setVolumeModifier(float volume){
+    public void setSpeed(float speed) {
+        /**
+         * 获取当前播放速度,1.0f为正常播放速度
+         *
+         * @param speed 返回默认值
+         * @return 当前播放速度
+         */
+        if (ksyTextureView != null) {
+            ksyTextureView.setSpeed(speed);
+            ksyTextureView.prepareAsync();
+        }
+    }
+
+    public void setVolumeModifier(float volume) {
         mVolume = volume;
         setMutedModifier(mMuted);
     }
 
-    public void setRepeatModifier(boolean repeat){
+    public void setRepeatModifier(boolean repeat) {
         mRepeat = repeat;
-        if(ksyTextureView != null)
+        if (ksyTextureView != null)
             ksyTextureView.setLooping(repeat);
     }
 
-    public void setProgressUpdateInterval(float progressUpdateInterval){
+    public void setProgressUpdateInterval(float progressUpdateInterval) {
         mProgressUpdateInterval = progressUpdateInterval;
     }
 
-    public void setPlayInBackground(boolean background){
+    public void setPlayInBackground(boolean background) {
         mPlayInBackground = background;
     }
 
@@ -464,8 +502,8 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
         mUseNativeControls = controls;
     }
 
-    public void setTimeout(int prepareTimeout, int readTimeout){
-        if (mPrepareTimeout > 0 && mReadTimeout >0){
+    public void setTimeout(int prepareTimeout, int readTimeout) {
+        if (mPrepareTimeout > 0 && mReadTimeout > 0) {
             mPrepareTimeout = prepareTimeout;
             mReadTimeout = readTimeout;
             if (ksyTextureView != null)
@@ -473,16 +511,16 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
         }
     }
 
-    public void setBufferSize(int bufferSize){
-        if (mBufferSize > 0){
+    public void setBufferSize(int bufferSize) {
+        if (mBufferSize > 0) {
             mBufferSize = bufferSize;
             if (ksyTextureView != null)
                 ksyTextureView.setBufferSize(mBufferSize);
         }
     }
 
-    public void setBufferTime(int bufferTime){
-        if (mBufferTime > 0){
+    public void setBufferTime(int bufferTime) {
+        if (mBufferTime > 0) {
             mBufferTime = bufferTime;
             if (ksyTextureView != null)
                 ksyTextureView.setBufferTimeMax(mBufferTime);
@@ -505,12 +543,12 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
             mediaController.show();
         }
 
-        if(event.getAction()==MotionEvent.ACTION_DOWN)
+        if (event.getAction() == MotionEvent.ACTION_DOWN)
             mEventEmitter.receiveEvent(getId(), Events.EVENT_TOUCH.toString(), Arguments.createMap());
         return super.onTouchEvent(event);
     }
 
-    /*LifecycleEventListener*/
+    /* LifecycleEventListener */
     @Override
     public void onHostPause() {
         if (ksyTextureView != null) {
@@ -520,7 +558,7 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
 
     @Override
     public void onHostResume() {
-        if (ksyTextureView != null ) {
+        if (ksyTextureView != null) {
             ksyTextureView.runInForeground();
             if (!mPaused)
                 ksyTextureView.start();
@@ -531,21 +569,21 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
     public void onHostDestroy() {
     }
 
-    /*MediaPlayControl*/
+    /* MediaPlayControl */
     @Override
-    public void start(){
+    public void start() {
         if (ksyTextureView != null)
             ksyTextureView.start();
     }
 
     @Override
-    public void  pause(){
+    public void pause() {
         if (ksyTextureView != null)
             ksyTextureView.pause();
     }
 
     @Override
-    public boolean isPlaying(){
+    public boolean isPlaying() {
         if (ksyTextureView != null)
             return ksyTextureView.isPlaying();
         return false;
@@ -557,16 +595,16 @@ public class ReactKSYVideoView extends RelativeLayout implements LifecycleEventL
     }
 
     @Override
-    public int getDuration(){
+    public int getDuration() {
         if (ksyTextureView != null)
-            return (int)ksyTextureView.getDuration();
+            return (int) ksyTextureView.getDuration();
         return 0;
     }
 
     @Override
-    public int getCurrentPosition(){
+    public int getCurrentPosition() {
         if (ksyTextureView != null)
-            return (int)ksyTextureView.getCurrentPosition();
+            return (int) ksyTextureView.getCurrentPosition();
         return 0;
     }
 

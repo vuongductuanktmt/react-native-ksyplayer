@@ -7,7 +7,7 @@ import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.ksyun.media.player.KSYMediaPlayer;
-
+import android.util.Log;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -44,9 +44,11 @@ public class ReactKSYVideoViewManager extends SimpleViewManager<ReactKSYVideoVie
     public static final String PROP_READTIMEOUT = "readTimeout";
     public static final String PROP_BUFFERTIME = "bufferTime";
     public static final String PROP_BUFFERSIZE = "bufferSize";
-
     private static final int COMMAND_SAVEBITMAP_ID = 1;
     private static final String COMMAND_SAVEBITMAP_NAME = "saveBitmap";
+
+    public static final String PROP_SRC_HEADERS = "requestHeaders";
+
     @Override
     public String getName() {
         return REACT_CLASS;
@@ -59,7 +61,7 @@ public class ReactKSYVideoViewManager extends SimpleViewManager<ReactKSYVideoVie
     }
 
     @Override
-    public void onDropViewInstance(ReactKSYVideoView view) {//销毁对象
+    public void onDropViewInstance(ReactKSYVideoView view) {// 销毁对象
         super.onDropViewInstance(view);
         view.cleanupMediaPlayerResources();
         view.Release();
@@ -78,26 +80,29 @@ public class ReactKSYVideoViewManager extends SimpleViewManager<ReactKSYVideoVie
     @Nullable
     @Override
     public Map<String, Integer> getCommandsMap() {
-        return MapBuilder.of(
-                COMMAND_SAVEBITMAP_NAME, COMMAND_SAVEBITMAP_ID
-        );
+        return MapBuilder.of(COMMAND_SAVEBITMAP_NAME, COMMAND_SAVEBITMAP_ID);
     }
 
     @Override
     public void receiveCommand(ReactKSYVideoView video, int commandId, @Nullable ReadableArray args) {
-        switch (commandId){
-            case COMMAND_SAVEBITMAP_ID:
-                video.saveBitmap();
-                break;
-            default:
-                break;
+        switch (commandId) {
+        case COMMAND_SAVEBITMAP_ID:
+            video.saveBitmap();
+            break;
+        default:
+            break;
         }
     }
 
     @ReactProp(name = PROP_SRC)
-    public void setSource(ReactKSYVideoView videoView, @Nullable ReadableMap src){
-        String source = src.getString(PROP_SRC_URI);
-        videoView.setDataSource(source);
+    public void setSource(ReactKSYVideoView videoView, @Nullable ReadableMap src) {
+        try {
+            String source = src.getString(PROP_SRC_URI);
+            videoView.setDataSource(source, src.getMap(PROP_SRC_HEADERS));
+        } catch (Exception e) {
+            e.printStackTrace();
+            // TODO: handle exception
+        }
     }
 
     @ReactProp(name = PROP_RESIZE_MODE)
@@ -106,22 +111,22 @@ public class ReactKSYVideoViewManager extends SimpleViewManager<ReactKSYVideoVie
             videoView.setResizeModeModifier(KSYMediaPlayer.VIDEO_SCALING_MODE_NOSCALE_TO_FIT);
         else if (resizeModeOrdinalString.equals("cover"))
             videoView.setResizeModeModifier(KSYMediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
-        else if(resizeModeOrdinalString.equals("contain"))
+        else if (resizeModeOrdinalString.equals("contain"))
             videoView.setResizeModeModifier(KSYMediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
     }
 
     @ReactProp(name = PROP_PAUSED, defaultBoolean = false)
-    public void setPause (ReactKSYVideoView videoView, @Nullable boolean paused){
+    public void setPause(ReactKSYVideoView videoView, @Nullable boolean paused) {
         videoView.setPausedModifier(paused);
     }
 
     @ReactProp(name = PROP_MIRROR, defaultBoolean = false)
-    public void setMirror(ReactKSYVideoView videoView, @Nullable boolean mirror){
+    public void setMirror(ReactKSYVideoView videoView, @Nullable boolean mirror) {
         videoView.setMirror(mirror);
     }
 
     @ReactProp(name = PROP_DEGREE, defaultInt = 0)
-    public void setDegree(ReactKSYVideoView videoView, @Nullable int degree){
+    public void setDegree(ReactKSYVideoView videoView, @Nullable int degree) {
         videoView.setRotateDegree(degree);
     }
 
@@ -131,10 +136,14 @@ public class ReactKSYVideoViewManager extends SimpleViewManager<ReactKSYVideoVie
     }
 
     @ReactProp(name = PROP_VOLUME, defaultFloat = 0.5f)
-    public void setVolumn(ReactKSYVideoView videoView, @Nullable double volume){
+    public void setVolumn(ReactKSYVideoView videoView, @Nullable double volume) {
         videoView.setVolumeModifier((float) volume);
     }
 
+    @ReactProp(name = PROP_RATE, defaultFloat = 1f)
+    public void setRate(ReactKSYVideoView videoView, @Nullable double rate) {
+        videoView.setSpeed((float) rate);
+    }
 
     @ReactProp(name = PROP_REPEAT, defaultBoolean = false)
     public void setRepeat(final ReactKSYVideoView videoView, final boolean repeat) {
@@ -173,7 +182,7 @@ public class ReactKSYVideoViewManager extends SimpleViewManager<ReactKSYVideoVie
         videoView.setBufferSize(bufferSize);
     }
 
-    @ReactProp(name = PROP_BUFFERTIME,  defaultInt = 2)
+    @ReactProp(name = PROP_BUFFERTIME, defaultInt = 2)
     public void setBufferTime(final ReactKSYVideoView videoView, final int bufferTime) {
         videoView.setBufferTime(bufferTime);
     }
