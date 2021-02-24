@@ -43,7 +43,7 @@
   "name": "react-native-ksyplayer",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zzf2e/react-native-video-player.git"
+    "url": "git+https://github.com/vuongductuanktmt/react-native-video-player.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
