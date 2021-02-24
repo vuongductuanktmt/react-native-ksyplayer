@@ -20,5 +20,5 @@ Pod::Spec.new do |s|
   s.source_files  = "ios/RCTKSYVideo/*.{h,m}"
 
   s.dependency "React"
-  s.dependency "KSYMediaPlayer_iOS"
+  s.dependency "KSYPlayer_Box"
 end
